@@ -2,21 +2,30 @@ from flask import Flask, render_template, session, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
-from wtforms.validators import Required
+from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from flask_moment import Moment 
 from datetime import datetime
+from flask_script import Shell, Manager
+from flask_migrate import Migrate, MigrateCommand
 
 
 app = Flask(__name__)
+manager = Manager(app)
+moment = Moment(app)
+bootstrap = Bootstrap(app)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.sqlite3' 
 app.config['SECRET_KEY'] = "sulit ditebak"
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-moment = Moment(app)
-bootstrap = Bootstrap(app)
-db = SQLAlchemy(app)
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+manager.add_command("shell", Shell(make_context=make_shell_context))
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -39,7 +48,7 @@ class User(db.Model):
 
 
 class NameForm(Form):
-    name = StringField('Siapa Nama Anda? ',validators=[Required()])
+    name = StringField('Siapa Nama Anda? ',validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
@@ -75,4 +84,4 @@ def internal_error(e):
 
 
 if __name__=='__main__':
-    app.run(debug=True)
+    manager.run()

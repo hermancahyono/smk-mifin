@@ -15,7 +15,7 @@
 	{% endif %}
 	<p>The local date time is {{ moment(current_time).format('LLL') }},</p>
 	<p>That was {{ moment(current_time).fromNow(refresh=True)  }},</p>
-<
+
 </div>
 {{ wtf.quick_form(form) }}
 {% endblock %}
